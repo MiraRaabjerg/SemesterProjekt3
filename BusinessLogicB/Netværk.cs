@@ -1,6 +1,6 @@
 namespace BusinessLogic;
 
-public class ADC
+public class Netværk
 {
     
 }
