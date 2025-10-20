@@ -1,6 +1,6 @@
 namespace DataB;
 
-public class KnapBData
+public class SwitchBData
 {
     
 }
