@@ -1,5 +1,5 @@
 namespace DataB;
-using System.Device.Gpio; //skal installeres via NuGet!!!!!!
+using System.Device.Gpio; 
 
 public class BatteriB:IBatteriB 
 {

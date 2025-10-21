@@ -17,9 +17,3 @@ public class GemData
 
     public List<Episode> HentAlleEpisoder() => _episoder;
 }
-
-public class Episode
-{
-    public DateTime Tidspunkt { get; set; }
-    public int VarighedSekunder { get; set; }
-}

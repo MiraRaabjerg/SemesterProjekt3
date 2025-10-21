@@ -10,4 +10,9 @@
       <ProjectReference Include="..\BusinessLogicB\BusinessLogicB.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="System.Device.Gpio" Version="4.0.1" />
+    </ItemGroup>
+
 </Project>
