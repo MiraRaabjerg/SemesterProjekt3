@@ -2,50 +2,76 @@ using System;
 using System.Collections.Generic; 
 using System.Linq;
 using System.Threading;// Giver adgang til tråd-funktioner som Thread.Sleep() – bruges til at vente mellem målinger
-using HX711DotNet;// Importerer HX711DotNet-biblioteket, som bruges til at læse data fra HX711-sensoren
-using Unosquare.RaspberryIO;// Giver adgang til Raspberry Pi's GPIO-pins via C# – bruges til at styre hardware
-using Unosquare.WiringPi;// Initialiserer GPIO-systemet på Raspberry Pi – kræves før du bruger pins
-
+using System.Device.Gpio;
 namespace DataB;
 
 public class DSRespiration
 {
-    private readonly HX711 _sensor;              // HX711 sensor-objekt
-    private readonly List<int> _målinger = new(); // Liste til at gemme målinger
-    private readonly int _tærskel = 10000;        // Tærskelværdi for NT-episode
+    private readonly GpioController _gpio;
+    private readonly int _dataPin;
+    private readonly int _clockPin;
+    private readonly List<int> _målinger = new();
+    private readonly int _tærskel = 10000;
 
-    // Constructor: initialiserer GPIO og HX711 med angivne pins
-    public DSRespiration(int dataPin, int clockPin) 
+    public DSRespiration(int dataPin, int clockPin)
     {
-        Pi.Init<BootstrapWiringPi>();            // Starter GPIO-systemet
-        _sensor = new HX711(dataPin, clockPin);  // Opretter HX711 med dine GPIO-pins
+        _gpio = new GpioController();
+        _dataPin = dataPin;
+        _clockPin = clockPin;
+
+        _gpio.OpenPin(_dataPin, PinMode.Input);
+        _gpio.OpenPin(_clockPin, PinMode.Output);
     }
 
-    // Læser én værdi fra HX711 og gemmer den i listen
-    public void LæsSignal() 
+    public void LæsSensor()
     {
-        int værdi = _sensor.Read();              // Læs analog værdi fra respirationssensor
-        _målinger.Add(værdi);                    // Gem målingen
-        Console.WriteLine($"Måling: {værdi}");   // Udskriv til konsol
+        int værdi = LæsHX711();
+        _målinger.Add(værdi);
+        Console.WriteLine($"Måling: {værdi}");
     }
 
-    // Returnerer 1 hvis sidste måling er over tærskel, ellers 0
-    public int HentBinærSignal() 
+    private int LæsHX711()
+    {
+        // Vent på at dataPin går LOW
+        while (_gpio.Read(_dataPin) == PinValue.High) { }
+
+        int result = 0;
+
+        // Læs 24 bits
+        for (int i = 0; i < 24; i++)
+        {
+            _gpio.Write(_clockPin, PinValue.High);
+            Thread.Sleep(1); // kort delay
+            result = (result << 1) | (_gpio.Read(_dataPin) == PinValue.High ? 1 : 0);
+            _gpio.Write(_clockPin, PinValue.Low);
+            Thread.Sleep(1);
+        }
+
+        // Send 25. puls for at sætte gain (128)
+        _gpio.Write(_clockPin, PinValue.High);
+        Thread.Sleep(1);
+        _gpio.Write(_clockPin, PinValue.Low);
+        Thread.Sleep(1);
+
+        // Konverter til signed int
+        if ((result & 0x800000) != 0)
+            result |= unchecked((int)0xFF000000);
+
+        return result;
+    }
+
+    public int HentBinærSignal()
     {
         if (_målinger.Count == 0) return 0;
-        return _målinger.Last() > _tærskel ? 1 : 0;
+        return _målinger[^1] > _tærskel ? 1 : 0;
     }
 
-    // Tjekker om der har været NT-episode i X sekunder
-    public bool ErEpisodeIGang(int varighedSekunder) 
+    public bool ErEpisodeIGang(int varighedSekunder)
     {
         if (_målinger.Count < varighedSekunder) return false;
-
-        var seneste = _målinger.TakeLast(varighedSekunder); // Hent de seneste målinger
-        return seneste.All(v => v > _tærskel);               // Er de alle over tærskel?
+        var seneste = _målinger.TakeLast(varighedSekunder);
+        return seneste.All(v => v > _tærskel);
     }
 
-    // Returnerer alle målinger (til logning eller visualisering)
     public List<int> HentAlleMålinger() => _målinger;
-}
 }
