@@ -51,6 +51,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="HX711DotNet" Version="0.0.5" />
+		<PackageReference Include="Iot.Device.Bindings" Version="4.0.1" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

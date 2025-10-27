@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Device.Gpio;
+using Iot.Device.Hx711;
 using HX711DotNet;
 
 namespace DataB

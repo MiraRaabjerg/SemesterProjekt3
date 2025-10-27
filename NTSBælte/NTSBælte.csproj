@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <PackageReference Include="HX711DotNet" Version="0.0.5" />
+      <PackageReference Include="Iot.Device.Bindings" Version="4.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <PackageReference Include="System.Device.Gpio" Version="4.0.1" />
       <PackageReference Include="Unosquare.Raspberry.IO" Version="0.27.1" />
