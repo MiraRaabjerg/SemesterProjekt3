@@ -1,77 +1,55 @@
-using System; 
-using System.Collections.Generic; 
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;// Giver adgang til tråd-funktioner som Thread.Sleep() – bruges til at vente mellem målinger
-using System.Device.Gpio;
-namespace DataB;
+using System.Threading;
+using HX711DotNet;
 
-public class DSRespiration
+namespace DataB
 {
-    private readonly GpioController _gpio;
-    private readonly int _dataPin;
-    private readonly int _clockPin;
-    private readonly List<int> _målinger = new();
-    private readonly int _tærskel = 10000;
-
-    public DSRespiration(int dataPin, int clockPin)
+    public class DSRespiration
     {
-        _gpio = new GpioController();
-        _dataPin = dataPin;
-        _clockPin = clockPin;
+        private readonly HX711 _sensor;
+        private readonly List<int> _målinger = new();
+        private readonly int _tærskel = 10000;
 
-        _gpio.OpenPin(_dataPin, PinMode.Input);
-        _gpio.OpenPin(_clockPin, PinMode.Output);
-    }
-
-    public void LæsSensor()
-    {
-        int værdi = LæsHX711();
-        _målinger.Add(værdi);
-        Console.WriteLine($"Måling: {værdi}");
-    }
-
-    private int LæsHX711()
-    {
-        // Vent på at dataPin går LOW
-        while (_gpio.Read(_dataPin) == PinValue.High) { }
-
-        int result = 0;
-
-        // Læs 24 bits
-        for (int i = 0; i < 24; i++)
+        public DSRespiration(byte dataPin, byte clockPin)
         {
-            _gpio.Write(_clockPin, PinValue.High);
-            Thread.Sleep(1); // kort delay
-            result = (result << 1) | (_gpio.Read(_dataPin) == PinValue.High ? 1 : 0);
-            _gpio.Write(_clockPin, PinValue.Low);
-            Thread.Sleep(1);
+            _sensor = new HX711(dataPin, clockPin);
+
+            // Reference unit bruges til at kalibrere vægten
+            _sensor.SetReferenceUnit(1); // Justér efter din sensor
+
+            _sensor.Reset();
+            _sensor.Tare(); // Nulstil vægten
+            Console.WriteLine("Sensor nulstillet. Klar til måling.");
         }
 
-        // Send 25. puls for at sætte gain (128)
-        _gpio.Write(_clockPin, PinValue.High);
-        Thread.Sleep(1);
-        _gpio.Write(_clockPin, PinValue.Low);
-        Thread.Sleep(1);
+        public void LæsSignal()
+        {
+            try
+            {
+                int værdi = _sensor.GetWeight(5); // Læs gennemsnit af 5 målinger
+                _målinger.Add(værdi);
+                Console.WriteLine($"Måling: {værdi}");
 
-        // Konverter til signed int
-        if ((result & 0x800000) != 0)
-            result |= unchecked((int)0xFF000000);
+                // Power cycle for stabilitet
+                _sensor.PowerDown();
+                _sensor.PowerUp();
+                Thread.Sleep(100);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fejl ved læsning: {ex.Message}");
+            }
+        }
 
-        return result;
+        public bool ErEpisodeIGang(int varighedSekunder)
+        {
+            if (_målinger.Count < varighedSekunder) return false;
+            var seneste = _målinger.TakeLast(varighedSekunder);
+            return seneste.All(v => v > _tærskel);
+        }
+
+        public List<int> HentAlleMålinger() => _målinger;
     }
-
-    public int HentBinærSignal()
-    {
-        if (_målinger.Count == 0) return 0;
-        return _målinger[^1] > _tærskel ? 1 : 0;
-    }
-
-    public bool ErEpisodeIGang(int varighedSekunder)
-    {
-        if (_målinger.Count < varighedSekunder) return false;
-        var seneste = _målinger.TakeLast(varighedSekunder);
-        return seneste.All(v => v > _tærskel);
-    }
-
-    public List<int> HentAlleMålinger() => _målinger;
 }
