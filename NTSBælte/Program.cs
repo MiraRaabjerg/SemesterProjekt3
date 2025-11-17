@@ -13,8 +13,8 @@ class Program
     static void Main()
     {
         // GPIO (BCM-numre) – ret til de pins I FAKTISK har forbundet
-        int dataPin  = 22;  // DOUT fra HX711
-        int clockPin = 27;  // SCK  fra HX711
+        int dataPin  = 5;  // DOUT fra HX711
+        int clockPin = 6;  // SCK  fra HX711
 
         Console.WriteLine("===========================================");
         Console.WriteLine(" NTSBælte – ADC / HX711 test ");
@@ -54,7 +54,7 @@ class Program
                 double v = adc.LæsSignal();
                 count++;
 
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Måling #{count}: {v:F0}");
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Måling #{count}: {v}");
 
                 Thread.Sleep(200); // ~5 målinger i sekundet
             }
@@ -82,3 +82,4 @@ class Program
         }
     }
 }
+

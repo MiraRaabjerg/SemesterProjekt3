@@ -5,10 +5,10 @@ using Iot.Device.Hx711;
 
 namespace DataB
 {
-  
+
     /// Ren data-adgang til HX711: læser rå værdier fra ADC'en.
     /// Ingen glidende gennemsnit, ingen tærskler, ingen episode-logik.
-  
+
     public sealed class DSRespiration : IDisposable
     {
         private readonly Hx711 _hx;
@@ -35,17 +35,17 @@ namespace DataB
                 ) ?? throw new InvalidOperationException("Kunne ikke finde GetNetWeight på Hx711.");
         }
 
-       
+
         /// Læs én rå værdi fra HX711 (uden glidende gennemsnit, uden offset).
-       
+
         public int ReadRaw()
         {
             return SafeRead();
         }
 
-      
+
         /// Læs gennemsnit af flere rå værdier for mere stabilt signal.
-       
+
         public double ReadRawAverage(int n = 5)
         {
             long sum = 0;
@@ -54,6 +54,7 @@ namespace DataB
                 sum += SafeRead();
                 Thread.Sleep(2);
             }
+
             return sum / (double)n;
         }
 
@@ -66,8 +67,21 @@ namespace DataB
 
         public void Dispose()
         {
-            try { _hx?.PowerDown(); } catch { }
-            try { _hx?.Dispose(); }    catch { }
+            try
+            {
+                _hx?.PowerDown();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _hx?.Dispose();
+            }
+            catch
+            {
+            }
         }
     }
-}
+} 

@@ -24,8 +24,21 @@ namespace BusinessLogicB
 
         public void StopServer()
         {
-            try { _cts?.Cancel(); } catch { }
-            try { _listener?.Stop(); } catch { }
+            try
+            {
+                _cts?.Cancel();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _listener?.Stop();
+            }
+            catch
+            {
+            }
         }
 
         private async Task AcceptLoop(CancellationToken ct)
@@ -57,3 +70,4 @@ namespace BusinessLogicB
         }
     }
 }
+
