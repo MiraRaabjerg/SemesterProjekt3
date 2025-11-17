@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="NightTerrorMaui.PresentationMaui.NightPage"
-             Title="NightPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+<ContentPage
+    x:Class="NightTerrorMaui.PresentationMaui.NightPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Night Terror – Natdata">
+
+    <!-- Én VERTIKAL scroll for hele indholdet -->
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Knap + status -->
+            <VerticalStackLayout Spacing="10">
+                <Button Text="Hent nat-data"
+                Command="{Binding FetchCommand}"
+                CornerRadius="12"
+                Padding="18,12" />
+                <Label Text="{Binding Status}" />
+            </VerticalStackLayout>
+
+            <!-- Graf (tilpasser sig automatisk bredden) -->
+            <Frame HeightRequest="320" CornerRadius="12" Padding="10" HasShadow="True">
+                <GraphicsView x:Name="Chart"
+                      HeightRequest="280"
+                      HorizontalOptions="Fill"
+                      VerticalOptions="Fill" />
+            </Frame>
+
+            <!-- KPI’er -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Episoder" FontAttributes="Bold" />
+                    <Label Text="{Binding EpisodesCount}" FontSize="18" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                    <Label Text="Vibration (s)" FontAttributes="Bold" />
+                    <Label Text="{Binding TotalVibrationSeconds}" FontSize="18" />
+                </VerticalStackLayout>
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
+

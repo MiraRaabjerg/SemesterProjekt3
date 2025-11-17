@@ -1,11 +1,15 @@
-﻿namespace NightTerrorMaui
+﻿using NightTerrorMaui.PresentationMaui;
+
+namespace NightTerrorMaui;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    public App(NightTerrorMaui.PresentationMaui.NightPage page)
     {
-        public App()
-        {
-            InitializeComponent();
-            MainPage = new AppShell(); //Gør Shell til vores hovedside - så app'en bliver fleksibel til fremtidigt arbejde
-        }
+        InitializeComponent();
+
+        // Brug NavigationPage eller bare page, som du vil
+        MainPage = new NavigationPage(page);
     }
 }
+

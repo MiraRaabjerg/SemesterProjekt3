@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace NightTerrorMaui.DataMaui
 {
-    internal class ITcpNightServer
+    public interface ITcpNightServer
     {
+        Task<string> GetDataAsync(string ip = "raspberrypi.local", int port = 5000);
     }
 }
+

@@ -48,7 +48,7 @@ namespace DataB
         }
 
         /// Læser ét glattet sample, gemmer det trådsikkert og returnerer værdien.
-     
+
         public double LæsSignal()
         {
             // Gennemsnit over flere rå læsninger for stabilitet
@@ -69,11 +69,9 @@ namespace DataB
             Console.WriteLine($"Måling: {glat:F0}");
             return glat;
         }
-
-        /// <summary>
         /// Returnerer true hvis alle samples i de sidste 'varighedSekunder' ligger over tærskel.
         /// Tidsbaseret vindue (uafhængig af sampling-frekvens).
-        /// </summary>
+  
         public bool ErEpisodeIGang(int varighedSekunder) =>
             ErEpisodeIGang(TimeSpan.FromSeconds(varighedSekunder));
 
