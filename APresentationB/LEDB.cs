@@ -1,4 +1,4 @@
-﻿/*namespace APresentationB;
+﻿namespace APresentationB;
 
 public class LEDB
 {
@@ -24,7 +24,7 @@ public class LEDB
            - Over 20%: LED tændes konstant
            - 1–20%: LED blinker
            - 0%: LED forbliver slukket */
-       /* public void tændB(int BatteristatusB)
+        public void tændB(int BatteristatusB)
         {
             // Hvis batteriet har mere end 20%, så tændes LED’en normalt
             if (BatteristatusB > 20)
@@ -51,16 +51,16 @@ public class LEDB
             // Opretter en timer, der kører hvert 1/2 sekund (500 millisekunder)
             myTimer = new System.Timers.Timer(500);
             
-            /* Tilføj en event handler til timeren -> Oprettes for at holde styr på selve timeren
-            Dette er et event, som udløses hver gang timeren når sin grænse (interval på 1/2 sek) */
-         //   myTimer.Elapsed += OnTimedEvent; //OnTimedEvent er metoden der kaldes når timeren udløber
+           // Tilføj en event handler til timeren -> Oprettes for at holde styr på selve timeren
+           // Dette er et event, som udløses hver gang timeren når sin grænse (interval på 1/2 sek) */
+            myTimer.Elapsed += OnTimedEvent; //OnTimedEvent er metoden der kaldes når timeren udløber
             
             // Starter timeren
-          //  myTimer.AutoReset = true; // Hvis timeren skal gentage sig, skal AutoReset være true
-          //  myTimer.Enabled = true; /*Dette betyder at timeren bliver startet og begynder at tælle ned fra 500 millisekunder
+            myTimer.AutoReset = true; // Hvis timeren skal gentage sig, skal AutoReset være true
+            myTimer.Enabled = true; //Dette betyder at timeren bliver startet og begynder at tælle ned fra 500 millisekunder
                                     // og så kører den indtil den bliver stoppet, hvilket kun sker hvis du sætter Enabled = false*/
 
-           /* Console.WriteLine("Tryk på Enter for at afslutte programmet...");
+            Console.WriteLine("Tryk på Enter for at afslutte programmet...");
             Console.ReadLine(); //Holder programmet kørende
         }
 
