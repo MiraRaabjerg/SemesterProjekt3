@@ -1,6 +1,6 @@
 ﻿namespace APresentationB;
 
-public class LEDB
+/*public class LEDB
 {
     // Instanser af business- og datalag
         BatteriB batteriB = new BatteriB();
@@ -23,7 +23,7 @@ public class LEDB
         /* Metode til at tænde LED’en afhængigt af batteriniveau:
            - Over 20%: LED tændes konstant
            - 1–20%: LED blinker
-           - 0%: LED forbliver slukket */
+           - 0%: LED forbliver slukket 
         public void tændB(int BatteristatusB)
         {
             // Hvis batteriet har mere end 20%, så tændes LED’en normalt
@@ -52,13 +52,13 @@ public class LEDB
             myTimer = new System.Timers.Timer(500);
             
            // Tilføj en event handler til timeren -> Oprettes for at holde styr på selve timeren
-           // Dette er et event, som udløses hver gang timeren når sin grænse (interval på 1/2 sek) */
+           // Dette er et event, som udløses hver gang timeren når sin grænse (interval på 1/2 sek) 
             myTimer.Elapsed += OnTimedEvent; //OnTimedEvent er metoden der kaldes når timeren udløber
             
             // Starter timeren
             myTimer.AutoReset = true; // Hvis timeren skal gentage sig, skal AutoReset være true
             myTimer.Enabled = true; //Dette betyder at timeren bliver startet og begynder at tælle ned fra 500 millisekunder
-                                    // og så kører den indtil den bliver stoppet, hvilket kun sker hvis du sætter Enabled = false*/
+                                    // og så kører den indtil den bliver stoppet, hvilket kun sker hvis du sætter Enabled = false
 
             Console.WriteLine("Tryk på Enter for at afslutte programmet...");
             Console.ReadLine(); //Holder programmet kørende
@@ -77,4 +77,4 @@ public class LEDB
             Console.WriteLine("LED er slukket."); 
         }
     }
-    */
+*/
