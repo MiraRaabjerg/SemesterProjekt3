@@ -2,16 +2,17 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using DataB;
+using BusinessLogicB;
 
 namespace BusinessLogicB
 {
     public class Netværk
     {
-        private readonly DSRespiration _ds;
+        private readonly ADC _adc;
         private TcpListener? _listener;
         private CancellationTokenSource? _cts;
 
-        public Netværk(DSRespiration ds) => _ds = ds;
+        public Netværk(ADC adc) => _adc = adc;
 
         public void StartServer(int port)
         {
@@ -46,8 +47,8 @@ namespace BusinessLogicB
             string? line = await reader.ReadLineAsync();
             if (line?.Equals("GET_DATA", StringComparison.OrdinalIgnoreCase) == true)
             {
-                var data = _ds.HentAlleMålinger();
-                await writer.WriteLineAsync(string.Join(",", data.Select(v => v.ToString("F0"))));
+                var data = _adc.HentAlleMålinger();
+                await writer.WriteLineAsync(string.Join(",", data.Select(s => s.V.ToString("F0"))));
             }
             else
             {
