@@ -6,13 +6,13 @@ using DataB;   // <- vigtigt: reference til DataB-projektet
 
 namespace BusinessLogicB
 {
-    /// <summary>
+  
     /// Business-logic oven på data-laget:
     /// - glidende gennemsnit
     /// - offset
     /// - tærskel og episode-detektion
     /// - liste over målinger
-    /// </summary>
+   
     public sealed class ADC : IDisposable
     {
         // Ét sample = tid + glattet værdi
@@ -43,9 +43,9 @@ namespace BusinessLogicB
             return _sensor.ReadRawAverage(n);
         }
 
-        /// <summary>
+      
         /// Læs ét glattet sample, gem det i historik og returnér værdien.
-        /// </summary>
+        
        public double LæsSignal()
         {
             // Gennemsnit over flere rå læsninger
@@ -71,10 +71,9 @@ namespace BusinessLogicB
             return glat;
         }
 
-        /// <summary>
+    
         /// Returnerer true hvis alle samples i de sidste 'varighedSekunder'
         /// ligger over tærskel.
-        /// </summary>
         public bool ErEpisodeIGang(int varighedSekunder) =>
             ErEpisodeIGang(TimeSpan.FromSeconds(varighedSekunder));
 

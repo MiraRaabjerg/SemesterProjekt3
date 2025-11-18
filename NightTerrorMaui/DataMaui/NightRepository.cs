@@ -16,11 +16,11 @@ using NightTerrorMaui.Domain;
             private readonly int _port;
 
             // Du kan vælge at læse IP/port fra settings. Her injicerer vi bare defaults.
-            public NightRepository(ITcpNightServer tcp, string ip = "raspberrypi.local", int port = 5000)
+            public NightRepository(ITcpNightServer tcp)
             {
                 _tcp = tcp;
-                _ip = ip;
-                _port = port;
+                _ip = "192.168.43.229";
+                _port = 5000;
             }
 
             public async Task<NightData> GetNightAsync()

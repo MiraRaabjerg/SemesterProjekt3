@@ -13,7 +13,7 @@ namespace NightTerrorMaui.DataMaui
             try
             {
                 using var client = new TcpClient();
-                await client.ConnectAsync(ip, port);
+                await client.ConnectAsync("192.168.43.229", 5000);
 
                 using var stream = client.GetStream();
                 using var writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
