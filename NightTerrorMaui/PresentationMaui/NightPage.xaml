@@ -3,27 +3,30 @@
     x:Class="NightTerrorMaui.PresentationMaui.NightPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sfChart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
     Title="Night Terror – Natdata">
 
-    <!-- Én VERTIKAL scroll for hele indholdet -->
+    
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
 
             <!-- Knap + status -->
             <VerticalStackLayout Spacing="10">
                 <Button Text="Hent nat-data"
-                Command="{Binding FetchCommand}"
-                CornerRadius="12"
-                Padding="18,12" />
+                        Command="{Binding FetchCommand}"
+                        CornerRadius="12"
+                        Padding="18,12" />
                 <Label Text="{Binding Status}" />
             </VerticalStackLayout>
 
-            <!-- Graf (tilpasser sig automatisk bredden) -->
+            <!-- GRAF -->
             <Frame HeightRequest="320" CornerRadius="12" Padding="10" HasShadow="True">
-                <GraphicsView x:Name="Chart"
-                      HeightRequest="280"
-                      HorizontalOptions="Fill"
-                      VerticalOptions="Fill" />
+                <sfChart:SfCartesianChart>
+                    <sfChart:LineSeries 
+                        ItemsSource="{Binding Samples}"
+                        XBindingPath="Index"
+                        YBindingPath="Value" />
+                </sfChart:SfCartesianChart>
             </Frame>
 
             <!-- KPI’er -->

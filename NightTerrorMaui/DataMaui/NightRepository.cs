@@ -22,79 +22,44 @@ using NightTerrorMaui.Domain;
                 _ip = "192.168.43.229";
                 _port = 5000;
             }
-
+            
             public async Task<NightData> GetNightAsync()
             {
+                // 1. Hent rå tekst fra TCP-bæltet
                 var raw = await _tcp.GetDataAsync(_ip, _port);
 
                 if (string.IsNullOrWhiteSpace(raw))
-                    return new NightData(); // defensivt: aldrig null
+                    return new NightData();   // tom, men ikke null
 
-                var samples = new List<BreathSample>();
-                var episodes = new List<EpisodeSummary>();
-                double? threshold = null;
+                var data = new NightData();
 
-                var lines = raw.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                // 2. Split alle tal ud fra kommaer, linjeskift og mellemrum
+                var tokens = raw.Split(new[] { ',', '\n', '\r', ' ' },
+                    StringSplitOptions.RemoveEmptyEntries);
 
-                foreach (var line in lines)
+                var startTime = DateTime.Now;
+                double sampleIntervalSeconds = 0.2;   // ca. 5 samples pr sekund – justér om nødvendigt
+
+                // 3. Lav BreathSample for hvert tal
+                for (int i = 0; i < tokens.Length; i++)
                 {
-                    var trimmed = line.Trim();
-                    if (trimmed.Length == 0) continue;
-
-                    var parts = trimmed.Split(',', StringSplitOptions.TrimEntries);
-
-                    // --- TÆRSKEL ---
-                    if (parts.Length == 2 &&
-                        parts[0].Equals("THR", StringComparison.OrdinalIgnoreCase) ||
-                        parts[0].Equals("THRESHOLD", StringComparison.OrdinalIgnoreCase) ||
-                        parts[0].Equals("threshold", StringComparison.OrdinalIgnoreCase))
+                    if (double.TryParse(tokens[i],
+                            NumberStyles.Any,
+                            CultureInfo.InvariantCulture,
+                            out double freq))
                     {
-                        if (double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var thr))
-                            threshold = thr;
-                        continue;
+                        var t = startTime.AddSeconds(i * sampleIntervalSeconds);
+                        data.Samples.Add(new BreathSample(t, freq));
                     }
-
-                    // --- EPISODE-LINJE ---
-                    // E,<start>,<end>,<vibrationSeconds>
-                    if (parts.Length >= 4 && parts[0].Equals("E", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (TryParseDate(parts[1], out var es) &&
-                            TryParseDate(parts[2], out var ee) &&
-                            int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var vibSec))
-                        {
-
-                        episodes.Add(new EpisodeSummary
-                        {
-                            Start = es,
-                            End = ee,
-                            DurationSeconds = (int)Math.Round((ee - es).TotalSeconds),
-                            VibrationSeconds = vibSec
-                        });
-                    }
-                        continue;
-                    }
-
-                    // --- SAMPLE-LINJE ---
-                    // <time>,<freq>  ELLER  S,<time>,<freq>
-                    if (TryParseSample(parts, out var s))
-                    {
-                        samples.Add(s);
-                        continue;
-                    }
-
-                    // Alt andet ignoreres (fx debug-linjer)
                 }
 
-                // Hvis ingen episoder kom fra bæltet, kan vi udlede simple episoder ud fra tærskel
-                if (episodes.Count == 0 && threshold.HasValue && samples.Count >= 2)
-                    episodes = InferEpisodes(samples, threshold.Value);
+                // 4. Ingen episoder endnu → tom liste
+                data.Episodes = new List<EpisodeSummary>();
 
-                return new NightData
-                {
-                    Samples = samples,
-                    Episodes = episodes,
-                    Threshold = threshold
-                };
+                // 5. Ingen threshold fra bæltet
+                data.Threshold = null;
+
+                return data;
             }
 
             private static bool TryParseSample(string[] parts, out BreathSample sample)

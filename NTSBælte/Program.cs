@@ -3,7 +3,6 @@
 using System;
 using System.Threading;
 using BusinessLogicB;  // ADC-klassen
-// using DataB;       // behøves ikke længere her, ADC bruger DSRespiration internt
 
 class Program
 {

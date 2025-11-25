@@ -2,10 +2,10 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.ApplicationModel;   // MainThread
-using Microsoft.Maui.Controls;           // Command
-using NightTerrorMaui.BusinessMaui;      // INightImportService, IStatsService
-using NightTerrorMaui.Domain;            // NightData, BreathSample, EpisodeSummary
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using NightTerrorMaui.BusinessMaui;
+using NightTerrorMaui.Domain;
 
 namespace NightTerrorMaui.PresentationMaui
 {
@@ -14,24 +14,42 @@ namespace NightTerrorMaui.PresentationMaui
         private readonly INightImportService _import;
         private readonly IStatsService _stats;
 
-        public ObservableCollection<BreathSample> Samples { get; } = new();
-        public ObservableCollection<EpisodeSummary> Episodes { get; } = new();
+        // Syncfusion graf-data
+        public ObservableCollection<SamplePoint> Samples { get; } 
+            = new ObservableCollection<SamplePoint>();
 
+        // Episoder
+        public ObservableCollection<EpisodeSummary> Episodes { get; } 
+            = new ObservableCollection<EpisodeSummary>();
+
+        // Status tekst
         private string _status = "Klar";
-        public string Status { get => _status; set { _status = value; OnPropertyChanged(); } }
+        public string Status
+        {
+            get => _status;
+            set { _status = value; OnPropertyChanged(); }
+        }
 
+        // KPI: antal episoder
         private int _episodesCount;
-        public int EpisodesCount { get => _episodesCount; set { _episodesCount = value; OnPropertyChanged(); } }
+        public int EpisodesCount
+        {
+            get => _episodesCount;
+            set { _episodesCount = value; OnPropertyChanged(); }
+        }
 
+        // KPI: vibration i sekunder
         private int _totalVibrationSeconds;
-        public int TotalVibrationSeconds { get => _totalVibrationSeconds; set { _totalVibrationSeconds = value; OnPropertyChanged(); } }
+        public int TotalVibrationSeconds
+        {
+            get => _totalVibrationSeconds;
+            set { _totalVibrationSeconds = value; OnPropertyChanged(); }
+        }
 
-        // Rejses når data og KPI’er er klar (Page lytter på dette for at opdatere grafen)
-        public event Action? DataRefreshed;
-
+        // Knappens kommando
         public ICommand FetchCommand { get; }
 
-        public NightViewModel(INightImportService import, IStatsService stats) //Konstructor
+        public NightViewModel(INightImportService import, IStatsService stats)
         {
             _import = import;
             _stats = stats;
@@ -44,29 +62,35 @@ namespace NightTerrorMaui.PresentationMaui
             {
                 Status = "Henter...";
 
-                // Ryd på UI-tråden
+                // Ryd UI
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Samples.Clear();
                     Episodes.Clear();
                 });
 
-                // Hent nat-data (kan køre i baggrunden)
+                // Hent data
                 var data = await _import.ImportAsync();
+                if (data == null) data = new NightData();
+                if (data.Samples == null) data.Samples = new();
+                if (data.Episodes == null) data.Episodes = new();
 
-                // Defensive defaults ift. din model (parameterløs ctor + properties)
-                if (data == null)
-                    data = new NightData();                           // <- parameterløs ctor
-                if (data.Samples == null)
-                    data.Samples = new();                             // <- initér property
-                if (data.Episodes == null)
-                    data.Episodes = new();
-
-                // Fyld collections på UI-tråden
+                // Fyld graf-data + episoder
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    foreach (var s in data.Samples) Samples.Add(s);
-                    foreach (var e in data.Episodes) Episodes.Add(e);
+                    for (int i = 0; i < data.Samples.Count; i++)
+                    {
+                        var s = data.Samples[i]; // BreathSample
+                        
+                        Samples.Add(new SamplePoint
+                        {
+                            Index = i,
+                            Value = (float)s.Frequency      // ← hvis det hedder Frequency, så ret her!
+                        });
+                    }
+
+                    foreach (var ep in data.Episodes)
+                        Episodes.Add(ep);
                 });
 
                 // KPI’er
@@ -75,16 +99,19 @@ namespace NightTerrorMaui.PresentationMaui
                 TotalVibrationSeconds = st.TotalVibrationSeconds;
 
                 Status = $"Modtog {Samples.Count} samples, {Episodes.Count} episoder";
-
-                // Sig til siden at den må opdatere graf/scrollbredde
-                await MainThread.InvokeOnMainThreadAsync(() => DataRefreshed?.Invoke());
             }
             catch (Exception ex)
             {
-                Status = "Fejl under hentning af data.";
+                Status = "Fejl under hentning.";
                 System.Diagnostics.Debug.WriteLine(ex);
             }
         }
     }
-}
 
+    // Model til Syncfusion graf
+    public class SamplePoint
+    {
+        public int Index { get; set; }
+        public float Value { get; set; }
+    }
+}

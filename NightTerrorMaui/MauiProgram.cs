@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Syncfusion.Maui.Core.Hosting;
+
 
 using NightTerrorMaui.DataMaui;
 using NightTerrorMaui.BusinessMaui;
@@ -14,9 +16,11 @@ namespace NightTerrorMaui
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder.UseMauiApp<App>();
 
-            // (valgfrit) log til Output
+            builder
+                .UseMauiApp<App>()
+                .ConfigureSyncfusionCore();   // gør at grafen kan vises (rettet efter vi har testet uden at få graf frem)
+
             builder.Logging.AddDebug();
 
             // Data
