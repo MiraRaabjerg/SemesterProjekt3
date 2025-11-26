@@ -16,7 +16,6 @@ namespace DataB
 
         public DSRespiration(int dataPin, int clockPin)
         {
-            Console.WriteLine("[HX] Opretter Hx711...");
 
             // Brug ctor'en som din Hx711-version har
             _hx = new Hx711(dataPin, clockPin);

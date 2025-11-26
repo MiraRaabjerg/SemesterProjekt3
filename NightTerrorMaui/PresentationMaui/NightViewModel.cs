@@ -14,39 +14,22 @@ namespace NightTerrorMaui.PresentationMaui
         private readonly INightImportService _import;
         private readonly IStatsService _stats;
 
-        // Syncfusion graf-data
-        public ObservableCollection<SamplePoint> Samples { get; } 
+        // 🔥 KUN denne liste må eksistere — den bruges af grafen
+        public ObservableCollection<SamplePoint> Samples { get; }
             = new ObservableCollection<SamplePoint>();
 
-        // Episoder
-        public ObservableCollection<EpisodeSummary> Episodes { get; } 
+        public ObservableCollection<EpisodeSummary> Episodes { get; }
             = new ObservableCollection<EpisodeSummary>();
 
-        // Status tekst
         private string _status = "Klar";
-        public string Status
-        {
-            get => _status;
-            set { _status = value; OnPropertyChanged(); }
-        }
+        public string Status { get => _status; set { _status = value; OnPropertyChanged(); } }
 
-        // KPI: antal episoder
         private int _episodesCount;
-        public int EpisodesCount
-        {
-            get => _episodesCount;
-            set { _episodesCount = value; OnPropertyChanged(); }
-        }
+        public int EpisodesCount { get => _episodesCount; set { _episodesCount = value; OnPropertyChanged(); } }
 
-        // KPI: vibration i sekunder
         private int _totalVibrationSeconds;
-        public int TotalVibrationSeconds
-        {
-            get => _totalVibrationSeconds;
-            set { _totalVibrationSeconds = value; OnPropertyChanged(); }
-        }
+        public int TotalVibrationSeconds { get => _totalVibrationSeconds; set { _totalVibrationSeconds = value; OnPropertyChanged(); } }
 
-        // Knappens kommando
         public ICommand FetchCommand { get; }
 
         public NightViewModel(INightImportService import, IStatsService stats)
@@ -69,31 +52,30 @@ namespace NightTerrorMaui.PresentationMaui
                     Episodes.Clear();
                 });
 
-                // Hent data
+                // Hent nat-data
                 var data = await _import.ImportAsync();
+
                 if (data == null) data = new NightData();
                 if (data.Samples == null) data.Samples = new();
                 if (data.Episodes == null) data.Episodes = new();
 
-                // Fyld graf-data + episoder
+                // Konverter BreathSample → SamplePoint
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     for (int i = 0; i < data.Samples.Count; i++)
                     {
-                        var s = data.Samples[i]; // BreathSample
-                        
                         Samples.Add(new SamplePoint
                         {
                             Index = i,
-                            Value = (float)s.Frequency      // ← hvis det hedder Frequency, så ret her!
+                            Value = (float)data.Samples[i].Frequency
                         });
                     }
 
-                    foreach (var ep in data.Episodes)
-                        Episodes.Add(ep);
+                    foreach (var e in data.Episodes)
+                        Episodes.Add(e);
                 });
 
-                // KPI’er
+                // KPI'er
                 var st = _stats.Compute(data);
                 EpisodesCount = st.EpisodesCount;
                 TotalVibrationSeconds = st.TotalVibrationSeconds;
@@ -108,7 +90,6 @@ namespace NightTerrorMaui.PresentationMaui
         }
     }
 
-    // Model til Syncfusion graf
     public class SamplePoint
     {
         public int Index { get; set; }
