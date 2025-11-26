@@ -16,16 +16,13 @@ class Program
         int clockPin = 6;  // SCK  fra HX711
 
         Console.WriteLine("===========================================");
-        Console.WriteLine(" NTSBælte – ADC / HX711 test ");
+        Console.WriteLine(" NTSBælte – ADC");
         Console.WriteLine("===========================================\n");
-
-        Console.WriteLine($"Starter med GPIO (BCM): DOUT={dataPin}, SCK={clockPin}");
-        Console.WriteLine("Tryk Ctrl+C for at stoppe programmet.\n");
 
         // Gør så Ctrl+C stopper løkken 
         Console.CancelKeyPress += (s, e) =>
         {
-            Console.WriteLine("\n[CTRL+C] Stop-signal modtaget, lukker pænt ned...");
+            Console.WriteLine("\n[CTRL+C] Stop-signal modtaget");
             e.Cancel = true;
             _run = false;
         };
@@ -42,7 +39,7 @@ class Program
             net.StartServer(5000);
             Console.WriteLine("Netværksserver kører nu på port 5000.\n");
 
-            Console.WriteLine("Starter løbende målinger...\n");
+            Console.WriteLine("Starter målinger...\n");
 
             int count = 0;
             var start = DateTime.Now;
@@ -53,7 +50,7 @@ class Program
                 double v = adc.LæsSignal();
                 count++;
 
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Måling #{count}: {v}");
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Måling #{count}");
 
                 Thread.Sleep(200); // ~5 målinger i sekundet
             }
@@ -70,7 +67,7 @@ class Program
                 Console.WriteLine($"Fejl ved StopServer: {ex.Message}");
             }
 
-            Console.WriteLine("Program afsluttet. Farvel!");
+            Console.WriteLine("Program afsluttet");
         }
         catch (Exception ex)
         {
