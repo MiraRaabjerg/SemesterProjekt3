@@ -1,13 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;   // VIGTIG
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Extensions.DependencyInjection;   // VIGTIG
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Syncfusion.Maui.Core.Hosting;
-
-
+using NightTerrorMaui.Domain;
 using NightTerrorMaui.DataMaui;
 using NightTerrorMaui.BusinessMaui;
 using NightTerrorMaui.PresentationMaui;
+
 
 namespace NightTerrorMaui
 {

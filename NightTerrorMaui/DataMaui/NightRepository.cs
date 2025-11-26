@@ -53,14 +53,19 @@ using NightTerrorMaui.Domain;
                     }
                 }
 
-                // 4. Ingen episoder endnu → tom liste
-                data.Episodes = new List<EpisodeSummary>();
+            // 4. Bestem en tærskel for episode-detektion
+            //    Her vælger vi bare en fast værdi – justér til jeres fysiologiske krav
+            double threshold = 30.0;   // fx 30 "respiration pr. minut" / vilkårlig enhed
 
-                // 5. Ingen threshold fra bæltet
-                data.Threshold = null;
+            // 5. Beregn episoder ud fra samples og tærskel
+            var episodes = InferEpisodes(data.Samples.ToList(), threshold);
 
-                return data;
-            }
+            // 6. Gem resultaterne i NightData
+            data.Episodes = episodes;
+            data.Threshold = threshold;
+
+            return data;
+        }
 
             private static bool TryParseSample(string[] parts, out BreathSample sample)
             {
