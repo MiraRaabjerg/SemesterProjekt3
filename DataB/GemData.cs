@@ -2,20 +2,20 @@ namespace DataB
 {
     public class GemData
     {
-        // Alle målinger (fx glattet respirationssignal)
+        // Alle mï¿½linger (fx glattet respirationssignal)
         private readonly List<double> _samples = new();
 
         // Alle episoder
         private readonly List<Episode> _episoder = new();
 
-        // Gem én måling
-        public void GemMåling(double værdi)
+        // Gem ï¿½n mï¿½ling
+        public void GemMÃ¥ling(double vÃ¦rdi)
         {
-            _samples.Add(værdi);
+            _samples.Add(vÃ¦rdi);
         }
 
-        // Hent alle målinger (til Netværk/TCP)
-        public IReadOnlyList<double> HentAlleMålinger()
+        // Hent alle mï¿½linger (til Netvï¿½rk/TCP)
+        public IReadOnlyList<double> HentAlleMÃ¥linger()
         {
             return _samples;
         }

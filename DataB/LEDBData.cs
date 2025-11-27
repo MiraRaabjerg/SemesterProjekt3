@@ -1,6 +1,7 @@
 namespace DataB;
 
-public class LEDBData: ILEDB {
+public class LEDBData: ILEDB 
+{
     private readonly int _gpioPin;
     private Timer _blinkTimer;
     private bool _erTændt;
