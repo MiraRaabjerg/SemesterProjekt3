@@ -22,10 +22,15 @@
             <!-- GRAF -->
             <Frame HeightRequest="320" CornerRadius="12" Padding="10" HasShadow="True">
                 <sfChart:SfCartesianChart>
-                    <sfChart:LineSeries 
-                        ItemsSource="{Binding Samples}"
-                        XBindingPath="Index"
-                        YBindingPath="Value" />
+
+                    <!-- EKSPPLICIT Series-samling -->
+                    <sfChart:SfCartesianChart.Series>
+                        <sfChart:LineSeries
+                ItemsSource="{Binding Samples}"
+                XBindingPath="Index"
+                YBindingPath="Value" />
+                    </sfChart:SfCartesianChart.Series>
+
                 </sfChart:SfCartesianChart>
             </Frame>
 
