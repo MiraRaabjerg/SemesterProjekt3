@@ -65,21 +65,6 @@ namespace NightTerrorMaui.DataMaui
             return data;
         }
 
-            // 4. Beregn en threshold ud fra samples (median)
-            var orderedFreqs = data.Samples
-                .Select(s => s.Frequency)
-                .OrderBy(f => f)
-                .ToList();
-
-            double threshold = orderedFreqs[orderedFreqs.Count / 2]; // median
-            data.Threshold = threshold;
-
-            // 5. Udled episoder ud fra threshold
-            data.Episodes = InferEpisodes(data.Samples, threshold);
-
-            return data;
-        }
-
         /// <summary>
         /// Finder episoder hvor frekvensen ligger over threshold i mindst 10 sek.
         /// Returnerer EpisodeSummary med start/slut/duration + estimeret vibrationssekunder.
