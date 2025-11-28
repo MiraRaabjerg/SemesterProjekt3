@@ -6,6 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using NightTerrorMaui.BusinessMaui;
 using NightTerrorMaui.Domain;
+using Microsoft.Maui.Graphics;
 
 namespace NightTerrorMaui.PresentationMaui
 {
@@ -14,28 +15,50 @@ namespace NightTerrorMaui.PresentationMaui
         private readonly INightImportService _import;
         private readonly IStatsService _stats;
 
-        // 🔥 KUN denne liste må eksistere — den bruges af grafen
-        public ObservableCollection<SamplePoint> Samples { get; }
-            = new ObservableCollection<SamplePoint>();
+        // Samples som grafen tegner ud fra
+        public ObservableCollection<BreathSample> Samples { get; }
+            = new ObservableCollection<BreathSample>();
 
+        // Episoder til KPI’er
         public ObservableCollection<EpisodeSummary> Episodes { get; }
             = new ObservableCollection<EpisodeSummary>();
 
+        // 🔸 brugt af SimpleChartDrawable
+        public IDrawable Chart { get; }
+
+        // threshold som grafen kan tegne den orange linje ud fra
+        public double? Threshold { get; set; }
+
         private string _status = "Klar";
-        public string Status { get => _status; set { _status = value; OnPropertyChanged(); } }
+        public string Status
+        {
+            get => _status;
+            set { _status = value; OnPropertyChanged(); }
+        }
 
         private int _episodesCount;
-        public int EpisodesCount { get => _episodesCount; set { _episodesCount = value; OnPropertyChanged(); } }
+        public int EpisodesCount
+        {
+            get => _episodesCount;
+            set { _episodesCount = value; OnPropertyChanged(); }
+        }
 
         private int _totalVibrationSeconds;
-        public int TotalVibrationSeconds { get => _totalVibrationSeconds; set { _totalVibrationSeconds = value; OnPropertyChanged(); } }
+        public int TotalVibrationSeconds
+        {
+            get => _totalVibrationSeconds;
+            set { _totalVibrationSeconds = value; OnPropertyChanged(); }
+        }
 
         public ICommand FetchCommand { get; }
+
 
         public NightViewModel(INightImportService import, IStatsService stats)
         {
             _import = import;
             _stats = stats;
+            // vores drawable
+            Chart = new SimpleChartDrawable(this);
             FetchCommand = new Command(async () => await FetchAsync());
         }
 
@@ -45,42 +68,39 @@ namespace NightTerrorMaui.PresentationMaui
             {
                 Status = "Henter...";
 
-                // Ryd UI
+                // ryd collections på UI-tråden
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Samples.Clear();
                     Episodes.Clear();
                 });
 
-                // Hent nat-data
-                var data = await _import.ImportAsync();
+                var data = await _import.ImportAsync() ?? new NightData();
+                data.Samples ??= new List<BreathSample>();
+                data.Episodes ??= new List<EpisodeSummary>();
 
-                if (data == null) data = new NightData();
-                if (data.Samples == null) data.Samples = new();
-                if (data.Episodes == null) data.Episodes = new();
+                // gem threshold til grafen (kan være null)
+                Threshold = data.Threshold;
 
-                // Konverter BreathSample → SamplePoint
+                // fyld samples + episoder
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    for (int i = 0; i < data.Samples.Count; i++)
-                    {
-                        Samples.Add(new SamplePoint
-                        {
-                            Index = i,
-                            Value = (float)data.Samples[i].Frequency
-                        });
-                    }
+                    foreach (var s in data.Samples)
+                        Samples.Add(s);          // direkte BreathSample
 
                     foreach (var e in data.Episodes)
                         Episodes.Add(e);
                 });
 
-                // KPI'er
+                // KPI’er
                 var st = _stats.Compute(data);
                 EpisodesCount = st.EpisodesCount;
                 TotalVibrationSeconds = st.TotalVibrationSeconds;
 
                 Status = $"Modtog {Samples.Count} samples, {Episodes.Count} episoder";
+
+                // sig til view'et at grafen skal tegnes igen
+                OnPropertyChanged(nameof(Chart));
             }
             catch (Exception ex)
             {
@@ -88,6 +108,7 @@ namespace NightTerrorMaui.PresentationMaui
                 System.Diagnostics.Debug.WriteLine(ex);
             }
         }
+
     }
 
     public class SamplePoint

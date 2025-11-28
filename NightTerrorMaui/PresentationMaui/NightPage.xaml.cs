@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace NightTerrorMaui.PresentationMaui
+﻿namespace NightTerrorMaui.PresentationMaui
 {
     public partial class NightPage : ContentPage
     {
@@ -11,5 +9,6 @@ namespace NightTerrorMaui.PresentationMaui
         }
     }
 }
+
 
 
