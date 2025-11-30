@@ -21,11 +21,19 @@ namespace NightTerrorMaui.DataMaui
             _port = 5000;
         }
 
+        private string old_data;
+        
+        
         public async Task<NightData> GetNightAsync()
         {
             // 1. Hent rå tekst fra TCP-bæltet
-            var raw = await _tcp.GetDataAsync(_ip, _port);
-
+            var new_data = await _tcp.GetDataAsync(_ip, _port);
+            // raw er nyt data
+            // TODO: gamle data + nyt data
+            var raw = old_data + new_data;
+            // TODO: Overskrive det gamle data med det gamle + det nye
+            old_data = raw;
+            
             if (string.IsNullOrWhiteSpace(raw))
                 return new NightData();   // tom, men ikke null
 
@@ -53,7 +61,8 @@ namespace NightTerrorMaui.DataMaui
 
             // 4. Bestem en tærskel for episode-detektion
             //    Her vælger vi bare en fast værdi – justér til jeres fysiologiske krav
-            double threshold = 30.0;   // fx 30 "respiration pr. minut" / vilkårlig enhed
+            // Note: Denne værdi bor også i bæltets ADC klasse
+            double threshold = 1000.0;   // fx 30 "respiration pr. minut" / vilkårlig enhed
 
             // 5. Beregn episoder ud fra samples og tærskel
             var episodes = InferEpisodes(data.Samples.ToList(), threshold);

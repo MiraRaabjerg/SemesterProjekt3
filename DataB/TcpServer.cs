@@ -8,14 +8,15 @@ namespace DataB
 {
     public class TcpServer
     {
-        private readonly int _port;
-        private TcpListener _listener;
+        private readonly int _port;  // Portnummer som serveren lytter på
+        private TcpListener _listener; // TCP listener-objekt
 
         public TcpServer(int port)
         {
-            _port = port;
+            _port = port; // Gemmer portnummer
         }
 
+        // Starter serveren og accepterer klientforbindelser
         public void Start()
         {
             _listener = new TcpListener(IPAddress.Any, _port);
@@ -26,10 +27,11 @@ namespace DataB
             {
                 var client = _listener.AcceptTcpClient();
                 Console.WriteLine("Forbindelse oprettet med klient...");
-                HandleClient(client);
+                HandleClient(client); //Kalder HandleClient – metoden er i brug
             }
         }
 
+        // Håndterer en klientforbindelse
         private void HandleClient(TcpClient client)
         {
             using var stream = client.GetStream();
@@ -41,7 +43,7 @@ namespace DataB
 
             if (request == "GET_DATA")
             {
-                // Her kan du hente data fra GemData eller DSRespiration
+                // Klienten får målingerne fra txt-fil på RPI når man skriver GET_DATA i terminal
                 string data = File.ReadAllText("/home/pi/data/respdata.txt");
                 writer.WriteLine(data);
                 Console.WriteLine("Data sendt til klient.");

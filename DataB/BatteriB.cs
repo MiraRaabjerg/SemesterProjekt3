@@ -1,25 +1,28 @@
 namespace DataB;
 using System.Device.Gpio; 
 
+// Batteri-lag: læser spænding og konverterer til procent.
 public class BatteriB:IBatteriB 
 {
-    private readonly int _adcPin;
+    private readonly int _adcPin; // Pin til analog spændingsmåling
 
+    // Initialiserer med den pin, der bruges til ADC-måling
     public BatteriB(int adcPin) 
     {
         _adcPin = adcPin;
-        // Initialiser ADC
+        // Initialiser ADC - HW
     }
-
+    
+    // Returnerer batteriniveau som procent (0–100%)
     public int HentBatteriProcent() 
     {
-        int spænding = LæsSpænding(); // fx 3700 mV
+        int spænding = LæsSpænding(); // f.eks. 3700mV
         return KonverterSpændingTilProcent(spænding);
     }
 
     private int LæsSpænding() {
-        // Læs spænding fra ADC
-        return 3700; // placeholder
+        // Læs spænding fra ADC HW (vi har sat værdien, da dette ikke er realiseret i HW)
+        return 3700; // Vi har sat spændingen til 3700mV
     }
 
     private int KonverterSpændingTilProcent(int spænding) 

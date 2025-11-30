@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 namespace BusinessLogicB
 {
     // Håndterer TCP-kommunikation til MAUI-appen.
-    // Lytter på en port og sender måledata, når der modtages "GET_DATA".
+    // Lytter på en port (5000) og sender måledata, når der modtages "GET_DATA".
     public sealed class Netværk : IDisposable
     {
-        private readonly ADC _adc;
+        private readonly ADC _adc; //reference til ADC klassen
 
         private TcpListener? _listener;
-        private CancellationTokenSource? _cts;
+        private CancellationTokenSource? _cts; // Bruges til at stoppe serveren
 
+        //Initialiserer netværkslaget med adgang til ADC-data
         public Netværk(ADC adc)
         {
             _adc = adc ?? throw new ArgumentNullException(nameof(adc));
@@ -33,15 +34,19 @@ namespace BusinessLogicB
             _listener.Start();
 
             // Kør accepterings-loop i baggrundstråd
+            // (programmet starter en baggrundstråd, som løbende accepterer nye klientforbindelser via TCP – uden at blokere resten af programmet.)
             _ = Task.Run(() => AcceptLoopAsync(_cts.Token));
         }
-
+        
         // Stopper serveren pænt.
         public void StopServer()
         {
+            // sikrer at eventuelle fejl ignoreres (fx hvis token allerede er annulleret
             try { _cts?.Cancel(); } catch { /* ignore */ }
+            //igen for at undgå at programmet crasher, hvis der sker en fejl (fx hvis den allerede er stoppet.
             try { _listener?.Stop(); } catch { /* ignore */ }
-
+            
+            //markerer at serveren er helt stoppet og ressourcerne er frigivet.
             _cts = null;
             _listener = null;
         }
@@ -74,10 +79,10 @@ namespace BusinessLogicB
         /// Håndterer én klientforbindelse.
         private async Task HandleClientAsync(TcpClient client, CancellationToken ct)
         {
-            using var c = client;
-            using var stream = c.GetStream();
-            using var reader = new StreamReader(stream);
-            using var writer = new StreamWriter(stream) { AutoFlush = true };
+            using var c = client; //selve klientforbindelsen.
+            using var stream = c.GetStream(); //rå dataforbindelse.
+            using var reader = new StreamReader(stream); //læser tekst fra klienten.
+            using var writer = new StreamWriter(stream) { AutoFlush = true }; //ender tekst til klienten.
 
             try
             {
@@ -89,10 +94,10 @@ namespace BusinessLogicB
                 if (line.Equals("GET_DATA", StringComparison.OrdinalIgnoreCase))
                 {
                     // Hent alle målinger fra ADC-laget
-                    // Ret HentAlleMålinger hvis din metode hedder noget andet
                     var data = _adc.HentAlleMålinger();
 
-                    // Lav CSV-streng, fx: 1234,1235,1236,...
+                    // Opretter en CSV-streng (kommasepareret liste) med alle måleværdier fra "data". Altså: 
+                    //- henter værdien V og formaterer værdien som heltal med 0 decimaler
                     var csv = string.Join(",", data.Select(s => s.V.ToString("F0")));
 
                     await writer.WriteLineAsync(csv).ConfigureAwait(false);
@@ -109,6 +114,7 @@ namespace BusinessLogicB
             }
         }
 
+        //Rydder op og stopper serveren
         public void Dispose()
         {
             StopServer();

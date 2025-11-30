@@ -1,5 +1,6 @@
 namespace DataB;
 
+//Interfacet definerer LED-adfærd og bruges til at styre fysisk LED.
 public interface ILEDB
 {
     void Tænd();           // Tænder LED
