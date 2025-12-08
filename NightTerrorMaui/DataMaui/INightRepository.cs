@@ -7,11 +7,11 @@ using NightTerrorMaui.Domain;
 
 namespace NightTerrorMaui.DataMaui
 {
+    //Interface for at hente natdata fra bæltet eller fil.
     public interface INightRepository
     {
-        /// <summary>
-        /// Hent nat-data (samples + episoder). Returnér aldrig null.
-        /// </summary>
+        // Henter natdata (målinger og episoder) som NightData
+        // Bruges af NightImportService til at hente og videresende data til ViewModel
         Task<NightData> GetNightAsync();
     }
 }

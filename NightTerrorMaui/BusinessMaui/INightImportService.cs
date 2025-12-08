@@ -9,8 +9,9 @@ namespace NightTerrorMaui.BusinessMaui
 {
     public interface INightImportService
     {
-        /// Henter NightData (samples + episoder) fra data-laget (TCP/fil mm.).
-        /// Returnerer aldrig null – i værste fald en tom NightData().
+        // Interface for at hente natdata fra data-laget.
+        // Det kan være målinger og episoder fra TCP-forbindelse eller fil.
+        // Metoden lover altid at returnere noget – aldrig null.
         Task<NightData> ImportAsync();
     }
 }

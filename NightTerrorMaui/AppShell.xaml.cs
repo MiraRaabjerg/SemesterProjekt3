@@ -4,7 +4,7 @@ public partial class AppShell : Shell
 {
     public AppShell()
     {
-        InitializeComponent();
+        InitializeComponent(); // Loader XAML-indholdet fra AppShell.xaml
     }
 }
 

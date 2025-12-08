@@ -5,21 +5,20 @@ using NightTerrorMaui.Domain;
 
 namespace NightTerrorMaui.PresentationMaui
 {
-    /// <summary>
-    /// Enkel graf:
-    ///  - Sort kurve af Samples (resp. frekvens)
-    ///  - Orange linje for tærskel (hvis sat)
-    ///  - Egen akse + grid, ingen scroll
-    /// </summary>
+    // visualiserer natdata.
+    // Den henter Samples og Threshold fra NightViewModel og tegner en graf.
+    // Grafen indeholder akser, grid, labels og kurve, samt en tærskellinje.
+    // Klassen bruges af GraphicsView til at præsentere målinger og episoder i UI.
     public sealed class SimpleChartDrawable : IDrawable
     {
-        private readonly NightViewModel _vm;
-
+        private readonly NightViewModel _vm; // ViewModel med Samples og Threshold
+        
         public SimpleChartDrawable(NightViewModel vm)
         {
             _vm = vm ?? throw new ArgumentNullException(nameof(vm));
         }
 
+        // Tegner grafen
         public void Draw(ICanvas canvas, RectF dirty)
         {
             try
@@ -27,7 +26,7 @@ namespace NightTerrorMaui.PresentationMaui
                 canvas.SaveState();
                 canvas.Antialias = true;
 
-                // -------- Margener, så labels ikke klippes --------
+                // Indre afstande (margins) så akse- og labeltekster ikke bliver klippet
                 float ml = 70, mr = 28, mt = 16, mb = 56;
                 float left = dirty.Left + ml;
                 float right = dirty.Right - mr;
@@ -38,6 +37,7 @@ namespace NightTerrorMaui.PresentationMaui
                 canvas.FillColor = Colors.White;
                 canvas.FillRectangle(dirty);
 
+                // Samples fra ViewModel
                 var samples = _vm.Samples?.ToList() ?? new();
                 if (samples.Count < 2 || left >= right || top >= bottom)
                 {
@@ -52,13 +52,13 @@ namespace NightTerrorMaui.PresentationMaui
                     return;
                 }
 
-                // -------- Y-akse: min/max + lidt padding --------
+                // Y-akse: min/max + lidt padding
                 double rawMin = samples.Min(s => (double)s.Frequency);
                 double rawMax = samples.Max(s => (double)s.Frequency);
 
                 if (Math.Abs(rawMax - rawMin) < 0.001)
                 {
-                    // næsten flad linje -> giv lidt spænd
+                    // sikkerhed mod flad linje
                     rawMin -= 1;
                     rawMax += 1;
                 }
@@ -68,7 +68,7 @@ namespace NightTerrorMaui.PresentationMaui
                 double yMax = rawMax + padY;
                 if (yMax <= yMin) yMax = yMin + 1;   // sikkerhed
 
-                // -------- X/Y mapping-funktioner --------
+                // X/Y mapping-funktioner - oversætter frekvens og samples til punkter på grafen
                 float X(int idx)
                 {
                     if (samples.Count == 1) return left;
@@ -82,7 +82,7 @@ namespace NightTerrorMaui.PresentationMaui
                     return top + t * (bottom - top);
                 }
 
-                // -------- Vandrette grid-linjer --------
+                // Grid linjer - vandrette hjælpelinjer på Y-aksen
                 canvas.StrokeColor = Color.FromArgb("#E5E5E5");
                 canvas.StrokeSize = 1;
                 int yGrid = 4;
@@ -92,14 +92,17 @@ namespace NightTerrorMaui.PresentationMaui
                     canvas.DrawLine(left, yy, right, yy);
                 }
 
-                // -------- Tærskel-linje (orange) --------
+                // Tærskel-linje (orange)
                 if (_vm.Threshold.HasValue)
                 {
+                    // Beregn Y-position for tærskelværdien
                     float thrY = Y((float)_vm.Threshold.Value);
+                    // Tegn selve linjen
                     canvas.StrokeColor = Colors.Orange;
                     canvas.StrokeSize = 2;
                     canvas.DrawLine(left, thrY, right, thrY);
 
+                    // Tegn label med tærskelværdi
                     canvas.FontColor = Colors.Orange;
                     canvas.FontSize = 11;
                     canvas.DrawString(
@@ -109,10 +112,11 @@ namespace NightTerrorMaui.PresentationMaui
                         HorizontalAlignment.Left);
                 }
 
-                // -------- Sort polyline for samples --------
+                // Sort kurve for samples
                 canvas.StrokeColor = Colors.Black;
                 canvas.StrokeSize = 2.5f;
 
+                // Tegn linjer mellem hvert sample-punkt
                 for (int i = 1; i < samples.Count; i++)
                 {
                     var a = samples[i - 1];
@@ -123,7 +127,7 @@ namespace NightTerrorMaui.PresentationMaui
                         X(i), Y((float)b.Frequency));
                 }
 
-                // -------- Y-labels --------
+                // Y-labels - tallene langs y-aksen
                 canvas.FontColor = Colors.Gray;
                 canvas.FontSize = 11;
                 for (int i = 0; i <= yGrid; i++)
@@ -131,14 +135,14 @@ namespace NightTerrorMaui.PresentationMaui
                     double val = yMin + (yMax - yMin) * i / yGrid;
                     float yy = top + (bottom - top) * i / yGrid;
                     canvas.DrawString(
-                        val.ToString("0.0"),
-                        left - 56,
+                        val.ToString("0.0"), //Afrundet værdi
+                        left - 56, //placering til venstre
                         yy - 8,
                         HorizontalAlignment.Left);
                 }
 
-                // -------- X-labels (sample-indeks) --------
-                int xTicks = 6;
+                // X-labels (sample-indeks langs x-aksen)
+                int xTicks = 6; // antal markeringer på X-aksen
                 for (int i = 0; i <= xTicks; i++)
                 {
                     int idx =
@@ -155,7 +159,7 @@ namespace NightTerrorMaui.PresentationMaui
                         HorizontalAlignment.Left);
                 }
 
-                // -------- Aksentitler --------
+                // Aksernes titler
                 canvas.FontColor = Colors.Black;
                 canvas.FontSize = 12;
                 canvas.DrawString(
@@ -174,6 +178,7 @@ namespace NightTerrorMaui.PresentationMaui
                     HorizontalAlignment.Left);
                 canvas.RestoreState();
 
+                // afslut tegning
                 canvas.RestoreState();
             }
             catch (Exception ex)

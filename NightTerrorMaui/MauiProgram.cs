@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui;
-using Microsoft.Extensions.DependencyInjection;   // VIGTIG
+using Microsoft.Extensions.DependencyInjection;   // VIGTIG: // Importerer Dependency Injection (DI)-metoder (AddSingleton, AddTransient osv.), så vi kan registrere services i appen
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -22,7 +22,7 @@ namespace NightTerrorMaui
 
             builder
                 .UseMauiApp<App>()
-                .ConfigureSyncfusionCore();   // gør at grafen kan vises (rettet efter vi har testet uden at få graf frem)
+                .ConfigureSyncfusionCore();   // gør at grafen kan vises
 
             builder.Logging.AddDebug();
 
@@ -46,9 +46,10 @@ namespace NightTerrorMaui
             TaskScheduler.UnobservedTaskException += (s, e) =>
             {
                 System.Diagnostics.Debug.WriteLine($"[TASK] {e.Exception}");
-                e.SetObserved();
+                e.SetObserved(); // markerer at fejlen er håndteret
             };
 
+            // Byg og returner den færdige app
             return builder.Build();
         }
     }

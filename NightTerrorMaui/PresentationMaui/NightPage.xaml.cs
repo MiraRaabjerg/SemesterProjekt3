@@ -3,25 +3,27 @@ using NightTerrorMaui.PresentationMaui;
 
 namespace NightTerrorMaui.PresentationMaui
 {
+    //Code-behind for NightPage.xaml – styrer binding og grafopdatering
     public partial class NightPage : ContentPage
     {
-        private readonly NightViewModel _vm;
+        private readonly NightViewModel _vm; // ViewModel med data og kommandoer
 
         public NightPage(NightViewModel vm)
         {
-            InitializeComponent();
+            InitializeComponent(); // Initialiser XAML-indhold
 
             _vm = vm;
-            BindingContext = vm;
+            BindingContext = vm; // Sæt binding til ViewModel
 
-            // Når VM siger "Chart ændret", så invaliderer vi grafen
+            // Når VM siger "Chart ændret", så opdaterer vi grafen
             _vm.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(NightViewModel.Chart))
                 {
+                    // Tving grafen til at tegne igen på UI-tråden
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        ChartView.Invalidate();   // tving GraphicsView til at tegne igen
+                        ChartView.Invalidate();   // genopfrisk ChartView
                     });
                 }
             };

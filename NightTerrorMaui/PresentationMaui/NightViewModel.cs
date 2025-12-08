@@ -10,25 +10,27 @@ using Microsoft.Maui.Graphics;
 
 namespace NightTerrorMaui.PresentationMaui
 {
+    // ViewModel for NightPage – binder data og kommandoer til UI
     public class NightViewModel : BindableObject
     {
-        private readonly INightImportService _import;
-        private readonly IStatsService _stats;
+        private readonly INightImportService _import; // Henter NightData fra repository
+        private readonly IStatsService _stats; // beregner nøgletal udfra NightData
 
-        // Samples som grafen tegner ud fra
+        // Liste af målinger – vises som kurve i grafen
         public ObservableCollection<BreathSample> Samples { get; }
             = new ObservableCollection<BreathSample>();
 
-        // Episoder til KPI’er
+        // Liste af episoder – vises som nøgletal og evt. i liste
         public ObservableCollection<EpisodeSummary> Episodes { get; }
             = new ObservableCollection<EpisodeSummary>();
 
-        // 🔸 brugt af SimpleChartDrawable
+        // Tegneobjekt til grafen – opdateres når Samples ændres
         public IDrawable Chart { get; }
 
-        // threshold som grafen kan tegne den orange linje ud fra
+        // Tærskelværdi – bruges til at tegne orange linje i grafen
         public double? Threshold { get; set; }
 
+        // Statusbesked
         private string _status = "Klar";
         public string Status
         {
@@ -36,6 +38,7 @@ namespace NightTerrorMaui.PresentationMaui
             set { _status = value; OnPropertyChanged(); }
         }
 
+        // Antal episoder – vises som nøgletal
         private int _episodesCount;
         public int EpisodesCount
         {
@@ -43,6 +46,7 @@ namespace NightTerrorMaui.PresentationMaui
             set { _episodesCount = value; OnPropertyChanged(); }
         }
 
+        // Samlet vibrationstid – vises som nøgletal
         private int _totalVibrationSeconds;
         public int TotalVibrationSeconds
         {
@@ -50,36 +54,40 @@ namespace NightTerrorMaui.PresentationMaui
             set { _totalVibrationSeconds = value; OnPropertyChanged(); }
         }
 
+        // Kommando til at hente data – bindes til knappen
         public ICommand FetchCommand { get; }
 
 
+        // Constructor – modtager services og opretter kommando + graf
         public NightViewModel(INightImportService import, IStatsService stats)
         {
             _import = import;
             _stats = stats;
             // vores drawable
-            Chart = new SimpleChartDrawable(this);
+            Chart = new SimpleChartDrawable(this); // grafen tegnes ud fra Samples
             FetchCommand = new Command(async () => await FetchAsync());
         }
 
+        // henter og opdaterer data
         private async Task FetchAsync()
         {
             try
             {
                 Status = "Henter...";
 
-                // ryd collections på UI-tråden
+                // Ryd tidligere data på UI-tråden
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Samples.Clear();
                     Episodes.Clear();
                 });
 
+                // Hent NightData fra importservice
                 var data = await _import.ImportAsync() ?? new NightData();
                 data.Samples ??= new List<BreathSample>();
                 data.Episodes ??= new List<EpisodeSummary>();
 
-                // gem threshold til grafen (kan være null)
+                // gem tærskel til grafen (kan være null)
                 Threshold = data.Threshold;
 
                 // fyld samples + episoder
@@ -92,7 +100,7 @@ namespace NightTerrorMaui.PresentationMaui
                         Episodes.Add(e);
                 });
 
-                // KPI’er
+                // Beregn nøgletal og opdater felter
                 var st = _stats.Compute(data);
                 EpisodesCount = st.EpisodesCount;
                 TotalVibrationSeconds = st.TotalVibrationSeconds;
@@ -111,6 +119,7 @@ namespace NightTerrorMaui.PresentationMaui
 
     }
 
+    // Hjælpeklasse til graftegning – bruges af SimpleChartDrawable
     public class SamplePoint
     {
         public int Index { get; set; }

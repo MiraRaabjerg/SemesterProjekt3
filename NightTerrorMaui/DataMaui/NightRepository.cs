@@ -7,7 +7,8 @@ using NightTerrorMaui.Domain;
 
 namespace NightTerrorMaui.DataMaui
 {
-    // Henter rå tekst via TCP og parser til NightData (samples + episoder + threshold)
+    // Repository der henter og oversætter rå tekstdata til en NightData-model
+    // Bruges af NightImportService til at hente målinger og episoder fra TCP-serveren
     public sealed class NightRepository : INightRepository
     {
         private readonly ITcpNightServer _tcp;
@@ -21,12 +22,13 @@ namespace NightTerrorMaui.DataMaui
             _port = 5000;
         }
 
+        // Gem tidligere data som old_data
         private string old_data;
         
         
         public async Task<NightData> GetNightAsync()
         {
-            // 1. Hent rå tekst fra TCP-bæltet
+            // Henter rå tekst fra TCP-bæltet
             var new_data = await _tcp.GetDataAsync(_ip, _port);
             // raw er nyt data
             // TODO: gamle data + nyt data
@@ -35,18 +37,18 @@ namespace NightTerrorMaui.DataMaui
             old_data = raw;
             
             if (string.IsNullOrWhiteSpace(raw))
-                return new NightData();   // tom, men ikke null
+                return new NightData();   // returner tom, men ikke null
 
             var data = new NightData();
 
-            // 2. Split alle tal ud fra kommaer, linjeskift og mellemrum
+            // Split alle tal ud fra kommaer, linjeskift og mellemrum
             var tokens = raw.Split(new[] { ',', '\n', '\r', ' ' },
                 StringSplitOptions.RemoveEmptyEntries);
 
-            var startTime = DateTime.Now;
-            double sampleIntervalSeconds = 0.2;   // ca. 5 samples pr sekund – justér om nødvendigt
+            var startTime = DateTime.Now; //starttidspunkt for første sample
+            double sampleIntervalSeconds = 0.2;   // ca. 5 samples pr sekund
 
-            // 3. Lav BreathSample for hvert tal
+            // Lav BreathSample for hvert tal
             for (int i = 0; i < tokens.Length; i++)
             {
                 if (double.TryParse(tokens[i],
@@ -59,25 +61,24 @@ namespace NightTerrorMaui.DataMaui
                 }
             }
 
-            // 4. Bestem en tærskel for episode-detektion
-            //    Her vælger vi bare en fast værdi – justér til jeres fysiologiske krav
+            // Bestem en tærskel for episode-detektion
+            // Her vælger vi bare en fast værdi – justér til fysiologiske krav
             // Note: Denne værdi bor også i bæltets ADC klasse
-            double threshold = 1000.0;   // fx 30 "respiration pr. minut" / vilkårlig enhed
+            double threshold = 1000.0;   // fx 30 respiration pr. minut
 
-            // 5. Beregn episoder ud fra samples og tærskel
+            // Beregn episoder ud fra samples og tærskel
             var episodes = InferEpisodes(data.Samples.ToList(), threshold);
 
-            // 6. Gem resultaterne i NightData
+            // Gem resultaterne i NightData
             data.Episodes = episodes;
             data.Threshold = threshold;
 
             return data;
         }
 
-        /// <summary>
-        /// Finder episoder hvor frekvensen ligger over threshold i mindst 10 sek.
-        /// Returnerer EpisodeSummary med start/slut/duration + estimeret vibrationssekunder.
-        /// </summary>
+       
+        // Finder episoder hvor frekvensen ligger over threshold i mindst 10 sek.
+        // Returnerer EpisodeSummary med start/slut/duration + estimeret vibrationssekunder.
         private static List<EpisodeSummary> InferEpisodes(List<BreathSample> samples, double threshold)
         {
             var result = new List<EpisodeSummary>();
@@ -87,20 +88,22 @@ namespace NightTerrorMaui.DataMaui
             bool inEp = false;
             DateTime? start = null;
 
-            // parametre du kan tweake:
+            // parametre der kan justeres:
             var minDuration = TimeSpan.FromSeconds(10);  // kræv mindst 10 s over tærskel
-            var vibPerSec = 0.25;                        // “estimeret” vibrations-andel pr. sekund i en episode
+            var vibPerSec = 0.25;                        // Estimeret vibrations-andel pr. sekund i en episode
 
             for (int i = 0; i < ordered.Count; i++)
             {
                 var f = ordered[i].Frequency;
                 var t = ordered[i].Time;
-
+                
+                //Start en episode hvis frekvensen går over tærskel
                 if (!inEp && f >= threshold)
                 {
                     inEp = true;
                     start = t;
                 }
+                // Afslut episode hvis frekvensen falder under tærskel
                 else if (inEp && f < threshold)
                 {
                     var end = t;
@@ -116,7 +119,7 @@ namespace NightTerrorMaui.DataMaui
                 }
             }
 
-            // afslut hvis vi sluttede “inde i” en episode
+            // Afslut hvis vi stadig er “inde i” en episode ved slutningen
             if (inEp && start.HasValue)
             {
                 var end = ordered[^1].Time;

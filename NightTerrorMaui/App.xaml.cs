@@ -10,7 +10,7 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        // Byg hele kæden manuelt (bælte → repo → services → VM → side)
+        // Byg hele kæden manuelt (bælte → repository → services → ViewModel → side)
 
         var tcp = new TcpNightServer();          // Data-laget: TCP-klient
         var repo = new NightRepository(tcp);      // Data-laget: parser tekst → NightData
@@ -19,9 +19,9 @@ public partial class App : Application
         var vm = new NightViewModel(imp, stats);// ViewModel til NightPage
         var page = new NightPage(vm);             // View
 
-        // Evt. med navigation
+        // Evt. med navigation - giver mulighed for at tilføje flere sider senere
         MainPage = new NavigationPage(page);
-        // eller bare:
+        // ellers uden navigation:
         // MainPage = page;
     }
 }

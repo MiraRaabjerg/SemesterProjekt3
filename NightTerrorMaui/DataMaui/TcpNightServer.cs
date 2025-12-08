@@ -8,34 +8,38 @@ namespace NightTerrorMaui.DataMaui
 {
     public class TcpNightServer : ITcpNightServer
     {
-        /// <summary>
-        /// Henter rå måledata fra bæltet via TCP.
-        /// Sender kommandoen "GET_DATA" og læser hele svaret som tekst.
-        /// </summary>
+        // Denne klasse implementerer ITcpNightServer
+        // Den opretter forbindelse til bæltet via TCP og henter rå måledata som tekst
         public async Task<string> GetDataAsync(
             string ip = "raspberrypi.local",
             int port = 5000)
         {
             try
             {
+                // Opret TCP-klient
                 using var client = new TcpClient();
 
-                // Brug parametrene i stedet for hardkodet IP/port
+                // Forbind til den angivne IP og port
                 await client.ConnectAsync(ip, port);
 
+                // Opret stream til kommunikation
                 using var stream = client.GetStream();
+                
+                // Writer bruges til at sende kommandoer til bæltet
                 using var writer = new StreamWriter(stream, Encoding.UTF8)
                 {
                     AutoFlush = true
                 };
+                // Reader bruges til at læse svaret fra bæltet
                 using var reader = new StreamReader(stream, Encoding.UTF8);
 
                 // Send forespørgsel til bæltet
                 await writer.WriteLineAsync("GET_DATA");
 
-                // Læs hele svaret (CSV med værdierne)
+                // Læs hele svaret
                 string response = await reader.ReadToEndAsync();
-
+                
+                // Fjern unødvendige mellemrum og linjeskift
                 return response.Trim();
             }
             catch (Exception ex)
