@@ -1,6 +1,7 @@
 namespace DataB
 {
     // denne klasse gemmer vores målinger, så de senere kan bruges til analyse eller via netværk
+    // denne klasse er ikke realiseret, så den kan ikke gemme data
     public class GemData
     {
         // Liste med alle målinger
